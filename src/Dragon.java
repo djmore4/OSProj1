@@ -57,15 +57,13 @@ public class Dragon extends Thread {
 			}
 			k=0;
 			int i = 0;
-			/**currentTable = (++currentTable)%DEFAULT_TBL;
-			 * challenger = theAdventure.chalTables[currentTable];
-			 * while(challenger == null) {
-			 * 		challenger = theAdventure.chalTables[++currentTable];
-			 * }
+			/**currentTbl = (currentTable+1)%DEFAULT_TBL;
+			 * challenger = theAdventure.chalTables[currentTbl];
+			 * if(challenger == null) { continue;}
 			 * **/
 			if(iWon && someoneThere) {
 				msg("I will fight you again challenger!");
-				while(i<(numChal-1) && !foundOne){ //while(i<num_cha.availablePermits() && !foundOne){
+				while(i<(numChal-1) && !foundOne){
 					if(theAdventure.challengers[i].getPriority() > NORM_PRIORITY){
 						challenger = theAdventure.challengers[i];
 						foundOne = true;
@@ -98,6 +96,9 @@ public class Dragon extends Thread {
 				if(challenger.canMake() != 0) {
 					challenger.need_assistance = true;
 					challenger.msg("I am going to the shop!");
+					/**theAdventure.chalTables[currentTbl]
+					 * num_table.release();
+					 */
 					//numChal--;
 				}
 			}

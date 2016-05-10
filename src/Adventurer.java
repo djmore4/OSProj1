@@ -67,11 +67,10 @@ public class Adventurer extends Thread {
 				if(pos != 0 && Clerk.numClerks>0) { //if(pos != 0 && Clerk.num_clerk.availablePermit() > 0) {
 					try {
 						Clerk.numClnt++;
-						Clerk.num_clerk.acquire(); //while(!canPlaceClnt) { }
-						//canPlaceClnt = false;
+						Clerk.num_clerk.acquire();
 						namer.acquire();
-						theAdventure.clients[(Clerk.rear)%(DEFAULT_ADV-1)] = this;
-						Clerk.rear = (Clerk.rear+1)%(DEFAULT_ADV-1);
+						theAdventure.clients[(Clerk.rear)%(DEFAULT_ADV)] = this;
+						Clerk.rear = (Clerk.rear+1)%(DEFAULT_ADV);
 						//Clerk.num_clnt.release();
 						namer.release();
 					} catch (InterruptedException e) {
@@ -94,11 +93,10 @@ public class Adventurer extends Thread {
 			}
 			if(this.fortuneSize >= FORTUNE_SIZE) {break;}
 			while(this.canMake() == 0 && this.fortuneSize<FORTUNE_SIZE) {
-				msg("I can't make anything right now.");
-				msg("I need to fight the Dragon");
+				msg("I can't make anything right now, I need to fight the Dragon.");
 				try {
-					//Dragon.num_table.acquire();
 					mutex1.acquire();
+					//Dragon.num_table.acquire();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -129,7 +127,7 @@ public class Adventurer extends Thread {
 			Clerk.noOneLeft();
 		}
 		try {
-			this.join();
+			AdventureGame.advs[numAdv].join();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

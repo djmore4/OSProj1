@@ -23,7 +23,7 @@ public class AdventureGame {
 		
 		//start the Adventurers
 		for(int i=0; i < DEFAULT_ADV; i++) {
-			new Adventurer(theAdventure);
+			advs[i] = new Adventurer(theAdventure);
 		}
 		
 		//start the Dragon
