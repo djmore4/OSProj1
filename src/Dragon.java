@@ -11,7 +11,7 @@ public class Dragon extends Thread {
 	public String name = "Dragon";
 	AdventureGame theAdventure;
 	public static final Semaphore num_cha = new Semaphore(0, false);
-	public static int numChal = 0, currentTable = -1;
+	public static int numChal = 0, currentTbl = -1;
 	public static final Semaphore mutex3 = new Semaphore(1, true);
 	public static final Semaphore namer = new Semaphore(1, true);
 	public static final Semaphore num_table = new Semaphore(3, true);
@@ -20,7 +20,7 @@ public class Dragon extends Thread {
 	public final int NORM_PRIORITY = 4;
 	public static boolean someoneThere = true;
 	public static boolean iWon = false;
-	public int numDrags = 1;
+	public int numDrags = 1, rollTotal = 0;
 	public static long time = System.currentTimeMillis();
 	
 	/**
@@ -46,22 +46,22 @@ public class Dragon extends Thread {
 	 * run method - 
 	 */
 	public void run() {
-		boolean foundOne;
+		//boolean foundOne;
 		while(someoneThere) {
-			foundOne = false;
+			//foundOne = false;
 			int k = 0;
-			while((numChal == 0) && someoneThere) {
+			while((num_table.availablePermits() == 3) && someoneThere) {
 				k++;
 				if((k%100000000) == 0)
 					msg("Waiting... k == " + k);
 			}
 			k=0;
-			int i = 0;
-			/**currentTbl = (currentTable+1)%DEFAULT_TBL;
-			 * challenger = theAdventure.chalTables[currentTbl];
-			 * if(challenger == null) { continue;}
-			 * **/
-			if(iWon && someoneThere) {
+			//int i = 0;
+			currentTbl = (currentTbl+1)%DEFAULT_TBL;
+			challenger = theAdventure.chalTables[currentTbl];
+			
+			if(challenger == null) { continue;}
+			/**if(iWon && someoneThere) {
 				msg("I will fight you again challenger!");
 				while(i<(numChal-1) && !foundOne){
 					if(theAdventure.challengers[i].getPriority() > NORM_PRIORITY){
@@ -78,8 +78,8 @@ public class Dragon extends Thread {
 					whichChal = (int) (Math.random()*DEFAULT_ADV);
 				}
 				challenger = theAdventure.challengers[whichChal];
-				msg("I will fight you " + challenger.getName());
-			}
+			}**/
+			msg("I will fight you " + challenger.getName());
 			if(!someoneThere)
 				break;
 			iWon = false;
@@ -89,6 +89,7 @@ public class Dragon extends Thread {
 				//msg("I got you!");
 			if(!fight()) {
 				msg("AARGH! You have defeated me " + challenger.name);
+				challenger.fightCount = 0;
 				int pos = (int) (Math.random()*4);
 				challenger.setPoss(pos); //
 				msg(challenger.getName() + " has " + challenger.possessions[0] + " jewels, " + challenger.possessions[1] + 
@@ -96,46 +97,31 @@ public class Dragon extends Thread {
 				if(challenger.canMake() != 0) {
 					challenger.need_assistance = true;
 					challenger.msg("I am going to the shop!");
-					/**theAdventure.chalTables[currentTbl]
-					 * num_table.release();
-					 */
+					for(int h=currentTbl; h<DEFAULT_TBL-1; h++) {
+						theAdventure.chalTables[currentTbl] = theAdventure.chalTables[currentTbl+1];
+					}
+					num_table.release();
+					
 					//numChal--;
 				}
 			}
 			else {
-				challenger.fightCount = challenger.fightCount+1;
-				iWon = true;
-				msg("HAHA I have won!");
-				if(challenger.fightCount == 2) { //(challenger.fightCount == 3)
+				//iWon = true;
+				if(challenger.fightCount == 3) {
+					msg("HAHA I have won!");
 					challenger.setPriority(NORM_PRIORITY);
 					//Adventurer.yield();
+					challenger.msg("Darn I lost "+ challenger.fightCount +" times, I guess someone else can try...");
 					challenger.fightCount = 0;
-					/**System.out.println("Press any key to continue...");
-					try {
-						int cont = System.in.read();
-						while(cont == -1) {
-							cont = System.in.read();
-						}
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}**/
-				}
-				else {
-					challenger.setPriority(10);
-					/**System.out.println("Press any key to continue...");
-					try {
-						int cont = System.in.read();
-						while(cont == -1) {
-							cont = System.in.read();
-						}
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}**/
+					for(int l=currentTbl; l<DEFAULT_TBL-1; l++) {
+					 	theAdventure.chalTables[currentTbl] = theAdventure.chalTables[currentTbl+1];
+					}
+					num_table.release();
+					 
 				}	
 			}
 			//Dragon.yield();
+			challenger.fightCount = challenger.fightCount+1;
 		}
 		msg("I am terminating...");
 		

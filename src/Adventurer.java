@@ -19,6 +19,7 @@ public class Adventurer extends Thread {
 	public final Semaphore namer = new Semaphore(1, true);
 	public final int FORTUNE_SIZE = 3, DEFAULT_ADV = 8, NORM_PRIORITY = 4;
 	public static long time = System.currentTimeMillis();
+	public static int pos = 1;
 	
 	/**
 	 * Default Constructor
@@ -96,15 +97,15 @@ public class Adventurer extends Thread {
 				msg("I can't make anything right now, I need to fight the Dragon.");
 				try {
 					mutex1.acquire();
-					//Dragon.num_table.acquire();
+					Dragon.num_table.acquire();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				Dragon.numChal++;
-				theAdventure.challengers[/**Math.abs**/(Dragon.numChal%(DEFAULT_ADV-1))] = this;
-				/**while(theAdventure.chalTables[++tableNum].need_assistance == true && tableNum < 3) { }
-				 * theAdventure.chalTables[tableNum] = this;**/
+				//theAdventure.challengers[/**Math.abs**/(Dragon.numChal%(DEFAULT_ADV-1))] = this;
+				theAdventure.chalTables[AdventureGame.DEFAULT_TBL-(Dragon.num_table.availablePermits()+1)] = this;
+				//theAdventure.chalTables[tableNum] = this;
 				mutex1.release();
 				int k = 0;
 				while(!need_assistance) { 	k++;
@@ -119,15 +120,17 @@ public class Adventurer extends Thread {
 			//theAdventure.chalTables[
 			//theAdventure.challengers[DEFAULT_ADV-Dragon.numChal] = null; 
 		}
-		--numAdv;
-		if(numAdv == 0) {
+		pos++;
+		if(pos == DEFAULT_ADV) {
 			//Dragon.currentThread().interrupt();
 			Dragon.noOneLeft();
 			//Clerk.currentThread().interrupt();
 			Clerk.noOneLeft();
 		}
 		try {
-			AdventureGame.advs[numAdv].join();
+			if(pos!=0){
+				AdventureGame.advs[pos-1].join();
+			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -1,7 +1,7 @@
 
 public class AdventureGame {
 	
-	private static final int DEFAULT_ADV = 8, DEFAULT_CLERK = 2, DEFAULT_DRAG = 1, DEFAULT_TBL = 3;
+	public static final int DEFAULT_ADV = 8, DEFAULT_CLERK = 2, DEFAULT_DRAG = 1, DEFAULT_TBL = 3;
 	public static Adventurer advs[] = new Adventurer[DEFAULT_ADV];
 	public static Clerk clerks[] = new Clerk[DEFAULT_CLERK];
 	public static Dragon drags[] = new Dragon[DEFAULT_DRAG];
