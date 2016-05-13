@@ -11,7 +11,8 @@ public class Dragon extends Thread {
 	public String name = "Dragon";
 	AdventureGame theAdventure;
 	public static final Semaphore num_cha = new Semaphore(0, false);
-	public static int numChal = 0, currentTbl = -1;
+	public static int numChal = 0;
+	private int currentTbl = -1;
 	public static final Semaphore mutex3 = new Semaphore(1, true);
 	public static final Semaphore namer = new Semaphore(1, true);
 	public static final Semaphore num_table = new Semaphore(3, true);
@@ -20,7 +21,8 @@ public class Dragon extends Thread {
 	public final int NORM_PRIORITY = 4;
 	public static boolean someoneThere = true;
 	public static boolean iWon = false;
-	public int numDrags = 1, rollTotal = 0;
+	public int numDrags = 1;
+	public Integer rollTotal[] = new Integer[3];
 	public static long time = System.currentTimeMillis();
 	
 	/**
@@ -57,7 +59,7 @@ public class Dragon extends Thread {
 			}
 			k=0;
 			//int i = 0;
-			currentTbl = (currentTbl+1)%DEFAULT_TBL;
+			currentTbl = (++currentTbl)%(DEFAULT_TBL-1);
 			challenger = theAdventure.chalTables[currentTbl];
 			
 			if(challenger == null) { continue;}
@@ -82,46 +84,34 @@ public class Dragon extends Thread {
 			msg("I will fight you " + challenger.getName());
 			if(!someoneThere)
 				break;
-			iWon = false;
-			//challenger.interrupt();
-			//Adventurer.currentThread().interrupt();
-			//if(challenger.isInterrupted())
-				//msg("I got you!");
-			if(!fight()) {
-				msg("AARGH! You have defeated me " + challenger.name);
-				challenger.fightCount = 0;
-				int pos = (int) (Math.random()*4);
-				challenger.setPoss(pos); //
-				msg(challenger.getName() + " has " + challenger.possessions[0] + " jewels, " + challenger.possessions[1] + 
-						" chains, " + challenger.possessions[2] + " rings and " + challenger.possessions[3] + " earrings");
-				if(challenger.canMake() != 0) {
-					challenger.need_assistance = true;
-					challenger.msg("I am going to the shop!");
-					for(int h=currentTbl; h<DEFAULT_TBL-1; h++) {
-						theAdventure.chalTables[currentTbl] = theAdventure.chalTables[currentTbl+1];
-					}
-					num_table.release();
-					
-					//numChal--;
-				}
-			}
-			else {
-				//iWon = true;
-				if(challenger.fightCount == 3) {
+			fight(currentTbl);
+			if(challenger.fightCount == 3) {
+				if(rollTotal[currentTbl] > theAdventure.chalTables[currentTbl].rollSum){
 					msg("HAHA I have won!");
-					challenger.setPriority(NORM_PRIORITY);
-					//Adventurer.yield();
 					challenger.msg("Darn I lost "+ challenger.fightCount +" times, I guess someone else can try...");
 					challenger.fightCount = 0;
 					for(int l=currentTbl; l<DEFAULT_TBL-1; l++) {
 					 	theAdventure.chalTables[currentTbl] = theAdventure.chalTables[currentTbl+1];
 					}
 					num_table.release();
-					 
-				}	
-			}
-			//Dragon.yield();
-			challenger.fightCount = challenger.fightCount+1;
+				}
+				else{
+					msg("AARGH! You have defeated me " + challenger.name);
+					int pos = (int) (Math.random()*4);
+					challenger.setPoss(pos);
+					msg(challenger.getName() + " has " + challenger.possessions[0] + " jewels, " + challenger.possessions[1] + 
+							" chains, " + challenger.possessions[2] + " rings and " + challenger.possessions[3] + " earrings");
+					if(challenger.canMake() != 0) {
+						challenger.need_assistance = true;
+						challenger.msg("I am going to the shop!");
+						for(int h=currentTbl; h<DEFAULT_TBL-1; h++) {
+							theAdventure.chalTables[currentTbl] = theAdventure.chalTables[currentTbl+1];
+						}
+					}
+				}
+				
+				 
+			}	
 		}
 		msg("I am terminating...");
 		
@@ -133,13 +123,10 @@ public class Dragon extends Thread {
 	 * both the dragon and the adventurer and returns if the dragon wins or not.
 	 * @return If the dragon wins the roll.
 	 */
-	public boolean fight() {
-		int dRoll = (int) (Math.random()*6), aRoll = (int) (Math.random()*6);
-		while(dRoll == aRoll) {
-			dRoll = (int) (Math.random()*6);
-			aRoll = (int) (Math.random()*6);
-		}
-		return (dRoll > aRoll);
+	public void fight(int currTbl) {
+		rollTotal[currTbl] += (int) (Math.random()*6);
+		challenger.rollSum += (int) (Math.random()*6);
+		challenger.fightCount++;
 	}
 	
 	public static void noOneLeft() {

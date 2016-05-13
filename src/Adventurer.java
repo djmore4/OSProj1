@@ -11,7 +11,7 @@ public class Adventurer extends Thread {
 	String name = "Adventurer";
 	public boolean need_assistance = false;
 	public static boolean canName = true;
-	public int fortuneSize = 0, fightCount = 0, tableNum = -1;
+	public int fortuneSize = 0, fightCount = 0, tableNum = -1, rollSum = 0;
 	AdventureGame theAdventure;
 	public int possessions[] = new int[4];
 	public static int numAdv = 0;
@@ -19,7 +19,7 @@ public class Adventurer extends Thread {
 	public final Semaphore namer = new Semaphore(1, true);
 	public final int FORTUNE_SIZE = 3, DEFAULT_ADV = 8, NORM_PRIORITY = 4;
 	public static long time = System.currentTimeMillis();
-	public static int pos = 1;
+	public static int pos = -1;
 	
 	/**
 	 * Default Constructor
@@ -120,13 +120,7 @@ public class Adventurer extends Thread {
 			//theAdventure.chalTables[
 			//theAdventure.challengers[DEFAULT_ADV-Dragon.numChal] = null; 
 		}
-		pos++;
-		if(pos == DEFAULT_ADV) {
-			//Dragon.currentThread().interrupt();
-			Dragon.noOneLeft();
-			//Clerk.currentThread().interrupt();
-			Clerk.noOneLeft();
-		}
+		++pos;
 		try {
 			if(pos!=0){
 				AdventureGame.advs[pos-1].join();
@@ -134,6 +128,12 @@ public class Adventurer extends Thread {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		if(pos == DEFAULT_ADV) {
+			//Dragon.currentThread().interrupt();
+			Dragon.noOneLeft();
+			//Clerk.currentThread().interrupt();
+			Clerk.noOneLeft();
 		}
 		msg("I am terminating...");
 	}
