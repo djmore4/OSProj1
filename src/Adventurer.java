@@ -67,7 +67,7 @@ public class Adventurer extends Thread {
 						Clerk.num_clnt.release();
 						Clerk.rear = (Clerk.rear+1)%(DEFAULT_ADV);
 						namer.release();
-						sleep(40);
+						sleep(10);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -104,6 +104,12 @@ public class Adventurer extends Thread {
 				mutex1.release();
 				int k = 0;
 				while(!need_assistance && stillInIt) { 	
+					try {
+						sleep(20);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					k++;
 					if((k%100000000) == 0)
 						msg("Waiting... k == " + k);

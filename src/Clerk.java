@@ -45,24 +45,18 @@ public class Clerk extends Thread {
 	 */
 	public void run() {
 		while(someoneThere) {
-			int k = 0;
 			while(num_clnt.availablePermits() == 0 && someoneThere) { 
 				try {
-					sleep(5);
+					sleep(20);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				k++;
-			if((k%10000000) == 0)
-				msg("Waiting... k == " + k); }
-			k = 0;
+			}
 			if(!someoneThere) break;
 			try {
 				num_clnt.acquire();
 				mutex2.acquire();
 				int pos = forge();
-				
 				String item = "";
 				switch(pos) {
 				case 1:
@@ -81,13 +75,11 @@ public class Clerk extends Thread {
 				mutex2.release();
 				num_clerk.release();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				//e.printStackTrace();
 			}
 			try {
 				sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
