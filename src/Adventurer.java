@@ -9,12 +9,12 @@ import java.util.concurrent.Semaphore;
 public class Adventurer extends Thread {
 	Thread runner;
 	String name = "Adventurer";
-	public boolean need_assistance = false;
-	public static boolean canName = true;
-	public int fortuneSize = 0, fightCount = 0, tableNum = -1, rollSum = 0;
-	AdventureGame theAdventure;
+	public boolean need_assistance = false, stillInIt = true;
+	public int fortuneSize = 0, fightCount = 0, rollSum = 0, number = 0;
+	public AdventureGame theAdventure;
 	public int possessions[] = new int[4];
 	public static int numAdv = 0;
+	public int count = 0;
 	public static final Semaphore mutex1 = new Semaphore(1, true);
 	public final Semaphore namer = new Semaphore(1, true);
 	public final int FORTUNE_SIZE = 3, DEFAULT_ADV = 8, NORM_PRIORITY = 4;
@@ -27,8 +27,8 @@ public class Adventurer extends Thread {
 	 */
 	public Adventurer(AdventureGame theAdv) throws InterruptedException {
 		namer.acquire();
-		canName = false;
 		name = name + (++numAdv);
+		number = numAdv;
 		theAdventure = theAdv;
 		setName(this.name);
 		//mutex1.release();
@@ -65,9 +65,10 @@ public class Adventurer extends Thread {
 					break;
 				}
 				msg("I can make a " + item);
-				if(pos != 0 && Clerk.numClerks>0) { //if(pos != 0 && Clerk.num_clerk.availablePermit() > 0) {
+				if(pos != 0 && Clerk.numClerks>0) { //if(pos != 0 && Clerk.num_clerk.availablePermits() > 0) {
 					try {
 						Clerk.numClnt++;
+						//Clerk.num_clnt.release();
 						Clerk.num_clerk.acquire();
 						namer.acquire();
 						theAdventure.clients[(Clerk.rear)%(DEFAULT_ADV)] = this;
@@ -78,6 +79,7 @@ public class Adventurer extends Thread {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					while(need_assistance){ }
 					//Clerk.num_clnt.release();
 					//Clerk.numClnt--;
 					//Clerk.num_clerk.release(); //Clerk.numClerks++;
@@ -85,12 +87,12 @@ public class Adventurer extends Thread {
 							" chains, " + possessions[2] + " rings and " + possessions[3] + " earrings");
 				}
 				try {
-					sleep(50);
+					sleep(30);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				msg("" + this.fortuneSize);
+				msg(" I have a fortune of " + this.fortuneSize);
 			}
 			if(this.fortuneSize >= FORTUNE_SIZE) {break;}
 			while(this.canMake() == 0 && this.fortuneSize<FORTUNE_SIZE) {
@@ -102,39 +104,46 @@ public class Adventurer extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Dragon.numChal++;
-				//theAdventure.challengers[/**Math.abs**/(Dragon.numChal%(DEFAULT_ADV-1))] = this;
-				theAdventure.chalTables[AdventureGame.DEFAULT_TBL-(Dragon.num_table.availablePermits()+1)] = this;
-				//theAdventure.chalTables[tableNum] = this;
+				msg("Wants to sit at a table.");
+				int i = 0;
+				boolean found = false;
+				while(i<Dragon.DEFAULT_TBL && !found) {
+					if(theAdventure.chalTables[i] == null || theAdventure.chalTables[i].need_assistance == true || theAdventure.chalTables[i].stillInIt == false) {
+						found = true;
+					}
+					else {
+						i++;
+					}
+				}
+				msg("Is sitting down at table " + (i+1));
+				stillInIt = true;
+				theAdventure.chalTables[i] = this;
 				mutex1.release();
 				int k = 0;
-				while(!need_assistance) { 	k++;
-				if((k%100000000) == 0)
-					msg("Waiting... k == " + k); }
+				while(!need_assistance && stillInIt) { 	
+					k++;
+					if((k%100000000) == 0)
+						msg("Waiting... k == " + k);
+				}
 				k = 0;
-				//Dragon.num_cha.release(); 
-				Dragon.numChal--;
-				if(this.canMake() != 0)
-					break;
+				count++;
+				msg("I have fought " + count + " round(s) against the dragon.");
 			}
-			//theAdventure.chalTables[
-			//theAdventure.challengers[DEFAULT_ADV-Dragon.numChal] = null; 
 		}
-		++pos;
+		msg("Let's see if I need to wait for anyone.");
 		try {
-			if(pos!=0){
-				AdventureGame.advs[pos-1].join();
+			if((number-2) >= 0 && AdventureGame.advs[number-1].isAlive()){
+				AdventureGame.advs[number-2].join();
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(pos == DEFAULT_ADV) {
-			//Dragon.currentThread().interrupt();
+		if(numAdv == 1) {
 			Dragon.noOneLeft();
-			//Clerk.currentThread().interrupt();
 			Clerk.noOneLeft();
 		}
+		numAdv--;
 		msg("I am terminating...");
 	}
 	

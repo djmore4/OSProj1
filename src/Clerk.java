@@ -28,15 +28,13 @@ public class Clerk extends Thread {
 	 * @throws InterruptedException
 	 */
 	public Clerk(AdventureGame theAdv) throws InterruptedException {
-		while(!canName) { }
-		canName = false;
+		namer.acquire();
 		name = name + numClerks;
 		numClerks++;
-		//namer.release();
 		setName(this.name);
-		canName = true;
 		theAdventure = theAdv;
 		runner = new Thread(this, this.name);
+		namer.release();
 		msg("beginning execution...");
 		runner.start();
 	}
@@ -46,16 +44,6 @@ public class Clerk extends Thread {
 	 * start method is called from the constructor.
 	 */
 	public void run() {
-		/**System.out.println("Press any key to continue...");
-		try {
-			int cont = System.in.read();
-			while(cont == -1) {
-				cont = System.in.read();
-			}
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}**/
 		while(someoneThere) {
 			int k = 0;
 			while(numClnt == 0 && someoneThere) { 
@@ -65,13 +53,10 @@ public class Clerk extends Thread {
 			k = 0;
 			if(!someoneThere) break;
 			try {
-				numClnt--;
+				numClnt--; //num_clnt.acquire();
 				mutex2.acquire();
-				//client = theAdventure.clients[front];
-				/**while(client == null) {
-				 	client = theAdventure.clients[(++front)%(DEFAULT_ADV-1)];
-				}**/
 				int pos = forge();
+				
 				String item = "";
 				switch(pos) {
 				case 1:
@@ -86,14 +71,14 @@ public class Clerk extends Thread {
 				}
 				msg("I made a " + item + " for " + theAdventure.clients[front].getName());
 				theAdventure.clients[front].need_assistance = false;
-				front = (front + 1)%(DEFAULT_ADV-1);
+				//num_clnt.release();
+				front = (front + 1)%(DEFAULT_ADV);
 				mutex2.release(); //canPickClnt = false;
 				num_clerk.release();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 			}
-			//num_clnt.release();
 			try {
 				sleep(10);
 			} catch (InterruptedException e) {

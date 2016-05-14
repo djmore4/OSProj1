@@ -10,19 +10,14 @@ public class Dragon extends Thread {
 	private Thread runner;
 	public String name = "Dragon";
 	AdventureGame theAdventure;
-	public static final Semaphore num_cha = new Semaphore(0, false);
-	public static int numChal = 0;
 	private int currentTbl = -1;
-	public static final Semaphore mutex3 = new Semaphore(1, true);
 	public static final Semaphore namer = new Semaphore(1, true);
 	public static final Semaphore num_table = new Semaphore(3, true);
 	public static final int DEFAULT_ADV = 8, DEFAULT_TBL = 3;
 	public Adventurer challenger;
-	public final int NORM_PRIORITY = 4;
 	public static boolean someoneThere = true;
-	public static boolean iWon = false;
 	public int numDrags = 1;
-	public Integer rollTotal[] = new Integer[3];
+	public int rollTotal[] = {0, 0, 0};
 	public static long time = System.currentTimeMillis();
 	
 	/**
@@ -48,9 +43,7 @@ public class Dragon extends Thread {
 	 * run method - 
 	 */
 	public void run() {
-		//boolean foundOne;
 		while(someoneThere) {
-			//foundOne = false;
 			int k = 0;
 			while((num_table.availablePermits() == 3) && someoneThere) {
 				k++;
@@ -58,63 +51,59 @@ public class Dragon extends Thread {
 					msg("Waiting... k == " + k);
 			}
 			k=0;
-			//int i = 0;
-			currentTbl = (++currentTbl)%(DEFAULT_TBL-1);
+			currentTbl = (++currentTbl)%(DEFAULT_TBL);
 			challenger = theAdventure.chalTables[currentTbl];
-			
-			if(challenger == null) { continue;}
-			/**if(iWon && someoneThere) {
-				msg("I will fight you again challenger!");
-				while(i<(numChal-1) && !foundOne){
-					if(theAdventure.challengers[i].getPriority() > NORM_PRIORITY){
-						challenger = theAdventure.challengers[i];
-						foundOne = true;
-						msg("I will fight " + challenger.name);
-					}
-					i++;
-				}
-			}
-			else if (!iWon && someoneThere){
-				int whichChal = (int) (Math.random()*DEFAULT_ADV);
-				while(theAdventure.challengers[whichChal] == null || theAdventure.challengers[whichChal].need_assistance){
-					whichChal = (int) (Math.random()*DEFAULT_ADV);
-				}
-				challenger = theAdventure.challengers[whichChal];
-			}**/
+			if(challenger == null) { 
+				//msg("There is no one sitting at table " + (currentTbl+1));
+				continue;}
 			msg("I will fight you " + challenger.getName());
-			if(!someoneThere)
+			if(!someoneThere){
 				break;
-			fight(currentTbl);
-			if(challenger.fightCount == 3) {
-				if(rollTotal[currentTbl] > theAdventure.chalTables[currentTbl].rollSum){
-					msg("HAHA I have won!");
-					challenger.msg("Darn I lost "+ challenger.fightCount +" times, I guess someone else can try...");
-					challenger.fightCount = 0;
-					for(int l=currentTbl; l<DEFAULT_TBL-1; l++) {
-					 	theAdventure.chalTables[currentTbl] = theAdventure.chalTables[currentTbl+1];
-					}
-					num_table.release();
+			}
+			msg("Current table = " + (currentTbl+1)); //Display the current table number
+			fight(currentTbl); //Fight the current adv
+			if(challenger.fightCount == 3) { //if the challenger has fought 3 times...
+				while(rollTotal[currentTbl] == theAdventure.chalTables[currentTbl].rollSum) {
+					fight(currentTbl);
+					challenger.fightCount--;
 				}
-				else{
+				if(rollTotal[currentTbl] > theAdventure.chalTables[currentTbl].rollSum){ //if the dragon won
+					msg("HAHA I beat you " + challenger.name + "!");
+					challenger.msg("Darn I lost "+ challenger.fightCount +" times, I guess someone else can try...");
+					theAdventure.chalTables[currentTbl] = null;
+					challenger.fightCount = 0;
+					num_table.release();
+					challenger.rollSum = 0;
+					challenger.stillInIt = false;
+				}
+				else{ //if the challenger won...
 					msg("AARGH! You have defeated me " + challenger.name);
-					int pos = (int) (Math.random()*4);
-					challenger.setPoss(pos);
+					int pos = (int) (Math.random()*4); //Determine what prize to give the challenger
+					challenger.setPoss(pos); //Give prize to challenger
 					msg(challenger.getName() + " has " + challenger.possessions[0] + " jewels, " + challenger.possessions[1] + 
 							" chains, " + challenger.possessions[2] + " rings and " + challenger.possessions[3] + " earrings");
+					challenger.rollSum = 0; //Reset Challenger for next fight
+					challenger.fightCount = 0; 
+					theAdventure.chalTables[currentTbl] = null; //Remove challenger from their table
+					challenger.stillInIt = false;
 					if(challenger.canMake() != 0) {
 						challenger.need_assistance = true;
 						challenger.msg("I am going to the shop!");
-						for(int h=currentTbl; h<DEFAULT_TBL-1; h++) {
-							theAdventure.chalTables[currentTbl] = theAdventure.chalTables[currentTbl+1];
-						}
 					}
+					else
+						challenger.msg("I need to get more materials");
+					num_table.release(); //Signal a table is open for use
 				}
-				
-				 
-			}	
+				rollTotal[currentTbl] = 0;
+			}
+			try {
+				sleep(30);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		msg("I am terminating...");
-		
 	}
 	
 	
@@ -124,9 +113,11 @@ public class Dragon extends Thread {
 	 * @return If the dragon wins the roll.
 	 */
 	public void fight(int currTbl) {
-		rollTotal[currTbl] += (int) (Math.random()*6);
-		challenger.rollSum += (int) (Math.random()*6);
+		rollTotal[currTbl] += (int) (Math.random()*6+1);
+		challenger.rollSum += (int) (Math.random()*6+1);
+		System.out.println(rollTotal[currTbl]);
 		challenger.fightCount++;
+		System.out.println(challenger.name + ": Roll Total: " +challenger.rollSum + " Fights: " + challenger.fightCount);
 	}
 	
 	public static void noOneLeft() {
