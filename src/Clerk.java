@@ -46,14 +46,20 @@ public class Clerk extends Thread {
 	public void run() {
 		while(someoneThere) {
 			int k = 0;
-			while(numClnt == 0 && someoneThere) { 
+			while(num_clnt.availablePermits() == 0 && someoneThere) { 
+				try {
+					sleep(5);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				k++;
-			if((k%100000000) == 0)
+			if((k%10000000) == 0)
 				msg("Waiting... k == " + k); }
 			k = 0;
 			if(!someoneThere) break;
 			try {
-				numClnt--; //num_clnt.acquire();
+				num_clnt.acquire();
 				mutex2.acquire();
 				int pos = forge();
 				
@@ -71,16 +77,15 @@ public class Clerk extends Thread {
 				}
 				msg("I made a " + item + " for " + theAdventure.clients[front].getName());
 				theAdventure.clients[front].need_assistance = false;
-				//num_clnt.release();
 				front = (front + 1)%(DEFAULT_ADV);
-				mutex2.release(); //canPickClnt = false;
+				mutex2.release();
 				num_clerk.release();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 			}
 			try {
-				sleep(10);
+				sleep(100);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

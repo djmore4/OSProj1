@@ -46,6 +46,12 @@ public class Dragon extends Thread {
 		while(someoneThere) {
 			int k = 0;
 			while((num_table.availablePermits() == 3) && someoneThere) {
+				try {
+					sleep(5);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				k++;
 				if((k%100000000) == 0)
 					msg("Waiting... k == " + k);
@@ -97,7 +103,7 @@ public class Dragon extends Thread {
 				rollTotal[currentTbl] = 0;
 			}
 			try {
-				sleep(30);
+				sleep(300);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

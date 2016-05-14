@@ -19,7 +19,6 @@ public class Adventurer extends Thread {
 	public final Semaphore namer = new Semaphore(1, true);
 	public final int FORTUNE_SIZE = 3, DEFAULT_ADV = 8, NORM_PRIORITY = 4;
 	public static long time = System.currentTimeMillis();
-	public static int pos = -1;
 	
 	/**
 	 * Default Constructor
@@ -29,17 +28,11 @@ public class Adventurer extends Thread {
 		namer.acquire();
 		name = name + (++numAdv);
 		number = numAdv;
-		theAdventure = theAdv;
+		theAdventure = theAdv; //Link this adventurer to the game
 		setName(this.name);
-		//mutex1.release();
 		runner = new Thread(this, this.name);
 		namer.release();
 		msg("beginning execution...");
-		//testing clerk
-		/**possessions[0] = 5;
-		possessions[1] = 2;
-		possessions[2] = 2;
-		possessions[3] = 1;**/
 		runner.start();
 	}
 	
@@ -65,32 +58,22 @@ public class Adventurer extends Thread {
 					break;
 				}
 				msg("I can make a " + item);
-				if(pos != 0 && Clerk.numClerks>0) { //if(pos != 0 && Clerk.num_clerk.availablePermits() > 0) {
+				if(pos != 0 && Clerk.num_clerk.availablePermits() > 0) {
 					try {
-						Clerk.numClnt++;
-						//Clerk.num_clnt.release();
 						Clerk.num_clerk.acquire();
 						namer.acquire();
 						theAdventure.clients[(Clerk.rear)%(DEFAULT_ADV)] = this;
+						Clerk.numClnt++;
+						Clerk.num_clnt.release();
 						Clerk.rear = (Clerk.rear+1)%(DEFAULT_ADV);
-						//Clerk.num_clnt.release();
 						namer.release();
+						sleep(40);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					while(need_assistance){ }
-					//Clerk.num_clnt.release();
-					//Clerk.numClnt--;
-					//Clerk.num_clerk.release(); //Clerk.numClerks++;
 					msg("I have " + possessions[0] + " jewels, " + possessions[1] + 
 							" chains, " + possessions[2] + " rings and " + possessions[3] + " earrings");
-				}
-				try {
-					sleep(30);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 				msg(" I have a fortune of " + this.fortuneSize);
 			}
@@ -132,8 +115,8 @@ public class Adventurer extends Thread {
 		}
 		msg("Let's see if I need to wait for anyone.");
 		try {
-			if((number-2) >= 0 && AdventureGame.advs[number-1].isAlive()){
-				AdventureGame.advs[number-2].join();
+			while(((number-1) < (DEFAULT_ADV-1)) && AdventureGame.advs[number].isAlive()){
+				AdventureGame.advs[number].join();
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
