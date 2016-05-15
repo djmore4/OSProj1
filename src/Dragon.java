@@ -66,7 +66,7 @@ public class Dragon extends Thread {
 			if(!someoneThere){
 				break;
 			}
-			msg("Current table = " + (currentTbl+1)); //Display the current table number
+			//msg("Current table = " + (currentTbl+1)); //Display the current table number
 			fight(currentTbl); //Fight the current adv
 			if(challenger.fightCount == 3) { //if the challenger has fought 3 times...
 				while(rollTotal[currentTbl] == theAdventure.chalTables[currentTbl].rollSum) {
@@ -103,7 +103,7 @@ public class Dragon extends Thread {
 				rollTotal[currentTbl] = 0;
 			}
 			try {
-				sleep(150);
+				sleep(120);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -121,9 +121,9 @@ public class Dragon extends Thread {
 	public void fight(int currTbl) {
 		rollTotal[currTbl] += (int) (Math.random()*6+1);
 		challenger.rollSum += (int) (Math.random()*6+1);
-		System.out.println(rollTotal[currTbl]);
+		//System.out.println(rollTotal[currTbl]);
 		challenger.fightCount++;
-		System.out.println(challenger.name + ": Roll Total: " +challenger.rollSum + " Fights: " + challenger.fightCount);
+		//System.out.println(challenger.name + ": Roll Total: " +challenger.rollSum + " Fights: " + challenger.fightCount);
 	}
 	
 	public static void noOneLeft() {

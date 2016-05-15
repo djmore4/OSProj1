@@ -27,10 +27,10 @@ public class Adventurer extends Thread {
 	public Adventurer(AdventureGame theAdv) throws InterruptedException {
 		namer.acquire();
 		name = name + (++numAdv);
-		number = numAdv;
 		theAdventure = theAdv; //Link this adventurer to the game
 		setName(this.name);
 		runner = new Thread(this, this.name);
+		number = numAdv;
 		namer.release();
 		msg("beginning execution...");
 		runner.start();
@@ -58,24 +58,22 @@ public class Adventurer extends Thread {
 					break;
 				}
 				msg("I can make a " + item);
-				if(pos != 0 && Clerk.num_clerk.availablePermits() > 0) {
+				if(pos != 0) {
 					try {
 						Clerk.num_clerk.acquire();
 						namer.acquire();
 						theAdventure.clients[(Clerk.rear)%(DEFAULT_ADV)] = this;
-						Clerk.numClnt++;
 						Clerk.num_clnt.release();
 						Clerk.rear = (Clerk.rear+1)%(DEFAULT_ADV);
 						namer.release();
 						sleep(10);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					msg("I have " + possessions[0] + " jewels, " + possessions[1] + 
 							" chains, " + possessions[2] + " rings and " + possessions[3] + " earrings");
+					msg(" I have a fortune of " + this.fortuneSize);
 				}
-				msg(" I have a fortune of " + this.fortuneSize);
 			}
 			if(this.fortuneSize >= FORTUNE_SIZE) {break;}
 			while(this.canMake() == 0 && this.fortuneSize<FORTUNE_SIZE) {
@@ -84,7 +82,6 @@ public class Adventurer extends Thread {
 					mutex1.acquire();
 					Dragon.num_table.acquire();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				msg("Wants to sit at a table.");
@@ -107,7 +104,6 @@ public class Adventurer extends Thread {
 					try {
 						sleep(20);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					k++;
@@ -119,13 +115,20 @@ public class Adventurer extends Thread {
 				msg("I have fought " + count + " round(s) against the dragon.");
 			}
 		}
-		msg("Let's see if I need to wait for anyone.");
+		msg("Let's see if I need to wait for anyone. My number is " + number);
+		if((number < DEFAULT_ADV) && AdventureGame.advs[number].isAlive()) {
+			msg("I need to wait for " + AdventureGame.advs[number].name);
+		}
 		try {
-			while(((number-1) < (DEFAULT_ADV-1)) && AdventureGame.advs[number].isAlive()){
+			while(number < DEFAULT_ADV && AdventureGame.advs[number].isAlive())
+				msg("Waiting for " + AdventureGame.advs[number].getName());
+			if(number < DEFAULT_ADV && !AdventureGame.advs[number].isAlive()) {
+				msg("I don't need to wait for anyone!" + AdventureGame.advs[number].isAlive());
+			}
+			while((number < DEFAULT_ADV) && AdventureGame.advs[number].isAlive()){
 				AdventureGame.advs[number].join();
 			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if(numAdv == 1) {
