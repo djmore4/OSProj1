@@ -73,7 +73,7 @@ public class Adventurer extends Thread {
 					}
 					msg("I have " + possessions[0] + " jewels, " + possessions[1] + 
 							" chains, " + possessions[2] + " rings and " + possessions[3] + " earrings");
-					msg(" I have a fortune of " + this.fortuneSize);
+					msg("I have a fortune of " + this.fortuneSize);
 				}
 			}
 			if(this.fortuneSize >= FORTUNE_SIZE) {break;}

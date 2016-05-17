@@ -14,6 +14,7 @@ public class Clerk extends Thread {
 	public final static Semaphore num_clnt = new Semaphore(0, true);
 	public final Semaphore namer = new Semaphore(1, true);
 	public final Semaphore mutex2 = new Semaphore(1, true);
+	public final Semaphore mutex = new Semaphore(1, true);
 	public Adventurer client;
 	public static int front = 0;
 	public static int rear = 0;
@@ -54,14 +55,16 @@ public class Clerk extends Thread {
 			}
 			if(!someoneThere) break;
 			try {
-				num_clnt.acquire();
+				mutex.acquire();
 				mutex2.acquire();
+				num_clnt.acquire();
 				client = theAdventure.clients[front];
 				forge();
-				theAdventure.clients[front].need_assistance = false;
+				client.need_assistance = false;
 				front = (front + 1)%(DEFAULT_ADV);
-				mutex2.release();
+				mutex.release();
 				sleep(5);
+				mutex2.release();
 				num_clerk.release();
 			} catch (InterruptedException e) {
 				//e.printStackTrace();
