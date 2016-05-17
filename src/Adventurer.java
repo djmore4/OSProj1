@@ -16,6 +16,7 @@ public class Adventurer extends Thread {
 	public static int numAdv = 0;
 	public int count = 0;
 	public static final Semaphore mutex1 = new Semaphore(1, true);
+	public static final Semaphore finish = new Semaphore(0, true);
 	public final Semaphore namer = new Semaphore(1, true);
 	public final int FORTUNE_SIZE = 3, DEFAULT_ADV = 8, NORM_PRIORITY = 4;
 	public static long time = System.currentTimeMillis();
@@ -119,17 +120,21 @@ public class Adventurer extends Thread {
 		if((number < DEFAULT_ADV) && AdventureGame.advs[number].isAlive()) {
 			msg("I need to wait for " + AdventureGame.advs[number].name);
 		}
-		try {
-			while(number < DEFAULT_ADV && AdventureGame.advs[number].isAlive())
-				msg("Waiting for " + AdventureGame.advs[number].getName());
-			if(number < DEFAULT_ADV && !AdventureGame.advs[number].isAlive()) {
-				msg("I don't need to wait for anyone!" + AdventureGame.advs[number].isAlive());
+		if(number > 1) {
+			try {
+				finish.acquire();
+				finish.release();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-			while((number < DEFAULT_ADV) && AdventureGame.advs[number].isAlive()){
-				AdventureGame.advs[number].join();
+		} else {
+			try {
+				sleep(5000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			finish.release();
 		}
 		if(numAdv == 1) {
 			Dragon.noOneLeft();
