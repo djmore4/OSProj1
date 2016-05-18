@@ -56,15 +56,12 @@ public class Clerk extends Thread {
 			if(!someoneThere) break;
 			try {
 				mutex.acquire();
-				mutex2.acquire();
 				num_clnt.acquire();
 				client = theAdventure.clients[front];
-				forge();
-				client.need_assistance = false;
 				front = (front + 1)%(DEFAULT_ADV);
+				client.need_assistance = false;
+				forge();
 				mutex.release();
-				sleep(5);
-				mutex2.release();
 				num_clerk.release();
 			} catch (InterruptedException e) {
 				//e.printStackTrace();
@@ -83,7 +80,7 @@ public class Clerk extends Thread {
 	 * create a "Magical Item" to give back to them.
 	 */
 	public void forge() {
-		Adventurer theAdv = theAdventure.clients[front];
+		/*Adventurer theAdv = theAdventure.clients[front];
 		boolean stop = false;
 		while(theAdv == null || theAdv.need_assistance==false) {
 			front = (front+1)%(DEFAULT_ADV);
@@ -93,23 +90,23 @@ public class Clerk extends Thread {
 				break;
 			}
 		}
-		if(stop == false) {
-			int item = theAdv.canMake();
+		if(stop == false) {*/
+			int item = client.canMake();
 			switch(item) {
 			case 1:
-				theAdv.possessions[1]--;
-				theAdv.possessions[0]--;
-				theAdv.fortuneSize += 1;
+				client.possessions[1]--;
+				client.possessions[0]--;
+				client.fortuneSize += 1;
 				break;
 			case 2:
-				theAdv.possessions[2]--;
-				theAdv.possessions[0]--;
-				theAdv.fortuneSize += 1;
+				client.possessions[2]--;
+				client.possessions[0]--;
+				client.fortuneSize += 1;
 				break;
 			case 3:
-				theAdv.possessions[3] = theAdv.possessions[3] - 2;
-				theAdv.possessions[0] = theAdv.possessions[0] - 2;
-				theAdv.fortuneSize += 1;
+				client.possessions[3] = client.possessions[3] - 2;
+				client.possessions[0] = client.possessions[0] - 2;
+				client.fortuneSize += 1;
 				break;
 			}
 			if(item != 0) {
@@ -126,9 +123,9 @@ public class Clerk extends Thread {
 					break;
 				}
 				msg("Making a " + theItem);
-				msg("I made " + theItem + " for " + theAdv.getName());
+				msg("I made " + theItem + " for " + client.getName());
 			}
-		}
+		//}
 	}
 	
 	public void msg(String m) {
